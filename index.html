@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>NHANES 数据库入门与提取平台操作教程</title>
+  <meta name="description" content="面向医学生与临床研究者的 NHANES 数据库入门教程 + ZSTATS 提取平台操作手册，重点讲清复杂抽样设计与权重选择">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="author" content="584493763">
+  <!-- 全部前端资源本地化，不依赖任何外部 CDN -->
+  <link rel="stylesheet" href="assets/vue.css">
+  <style>
+    :root { --sidebar-width: 320px; }
+    body, .markdown-section, .sidebar, .search input {
+      font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", Arial, sans-serif;
+    }
+    .markdown-section code, .markdown-section pre, .markdown-section pre > code, .token {
+      font-family: Consolas, "Courier New", Menlo, monospace;
+    }
+    .markdown-section { max-width: 900px; }
+    .sidebar > h1:first-child { margin: 10px 0 20px; font-size: 1.3rem; line-height: 1.4; }
+    .sidebar ul { margin: 0; }
+    .sidebar li p { margin: 1.05em 0 .5em; color: #9097a1; font-weight: 700; font-size: 12px; letter-spacing: .5px; }
+    .sidebar-nav > ul > li > a { font-weight: 600; }
+    /* 侧边栏二级目录 */
+    .sidebar-nav li ul { margin: 2px 0 6px; }
+    .sidebar-nav li ul li a {
+      font-size: 12.5px; color: #7a8290; padding: 3px 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sidebar-nav li ul li a:hover { color: #42b983; }
+    .sidebar-nav li ul li.active > a { color: #42b983; font-weight: 600; }
+    .markdown-section table { display: table; width: 100%; }
+    .markdown-section table th, .markdown-section table td { padding: 6px 10px; }
+    .markdown-section blockquote { border-left: 4px solid #42b983; background: #f8fbf9; padding: 10px 16px; color: #444; }
+    .markdown-section blockquote p { margin: .4em 0; }
+    .markdown-section h2 {
+      border-bottom: 2px solid #eaecef; padding-bottom: .3em; margin-top: 2.4em;
+    }
+    .markdown-section h3 { margin-top: 1.9em; }
+    .markdown-section hr { margin: 2.6em 0; border: 0; border-top: 1px solid #eaecef; }
+    mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; }
+    #app { font-size: 20px; }
+    #app .loading-tip { font-size: 15px; line-height: 1.9; color: #666; }
+    #app .loading-tip a { color: #42b983; }
+    /* 阅读进度条 */
+    #zs-progress {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0;
+      background: linear-gradient(90deg, #42b983, #2f9e6b); z-index: 9999;
+      transition: width .1s linear;
+    }
+    /* 返回顶部 */
+    #zs-top {
+      position: fixed; right: 22px; bottom: 26px; width: 42px; height: 42px;
+      border-radius: 50%; background: #42b983; color: #fff; border: 0; cursor: pointer;
+      font-size: 18px; line-height: 42px; text-align: center; opacity: 0; pointer-events: none;
+      transition: opacity .25s; box-shadow: 0 4px 14px rgba(0,0,0,.18); z-index: 9998;
+    }
+    #zs-top.show { opacity: .92; pointer-events: auto; }
+    #zs-top:hover { opacity: 1; }
+    @media screen and (max-width: 768px) {
+      #zs-top { right: 12px; bottom: 16px; }
+      .markdown-section { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="zs-progress"></div>
+  <div id="app">
+    <p>正在加载教程…</p>
+    <p class="loading-tip">
+      若长时间停留在本页，可能是浏览器阻止了脚本加载。<br>
+      可<a href="NHANES数据库入门与提取平台操作教程.md">直接阅读 Markdown 全文</a>，
+      或访问 <a href="https://github.com/584493763/nhanes-guide">GitHub 仓库</a>。
+    </p>
+  </div>
+  <button id="zs-top" title="返回顶部" aria-label="返回顶部">↑</button>
+
+  <script>
+    window.$docsify = {
+      name: 'NHANES 数据库入门与提取平台操作教程',
+      repo: '584493763/nhanes-guide',
+      homepage: 'README.md',
+      loadSidebar: true,
+      subMaxLevel: 0,
+      auto2top: true,
+      mergeNavbar: true,
+      relativePath: false,
+      notFoundPage: true,
+      copyCodeToClipboard: true,
+      sidebarDisplayLevel: 1,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: '搜索教程内容…',
+        noData: '没有找到相关内容',
+        depth: 3
+      },
+      plugins: [
+        /* MathJax 排版 */
+        function (hook, vm) {
+          function typeset() {
+            var main = document.getElementById('main');
+            if (window.MathJax && window.MathJax.typesetPromise && main) {
+              try { window.MathJax.typesetPromise([main]); } catch (e) {}
+            }
+          }
+          hook.doneEach(function () {
+            typeset();
+            var tries = 0;
+            var timer = setInterval(function () {
+              tries++;
+              if (window.MathJax && window.MathJax.typesetPromise) { typeset(); clearInterval(timer); }
+              else if (tries > 100) { clearInterval(timer); }
+            }, 200);
+          });
+        },
+        /* 阅读进度 + 返回顶部 */
+        function (hook, vm) {
+          hook.doneEach(function () {
+            var bar = document.getElementById('zs-progress');
+            var btn = document.getElementById('zs-top');
+            if (!bar || !btn) return;
+            function onScroll() {
+              var h = document.documentElement.scrollHeight - window.innerHeight;
+              var p = h > 0 ? (window.scrollY / h) * 100 : 0;
+              bar.style.width = p + '%';
+              btn.classList.toggle('show', window.scrollY > 400);
+            }
+            window.removeEventListener('scroll', window.__zsScroll || function(){});
+            window.__zsScroll = onScroll;
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+          });
+        },
+        /* 外部链接新窗口打开 */
+        function (hook) {
+          hook.doneEach(function () {
+            var main = document.getElementById('main');
+            if (!main) return;
+            main.querySelectorAll('a[href^="http"]').forEach(function (a) {
+              if (a.hostname && a.hostname !== location.hostname) {
+                a.target = '_blank';
+                a.rel = 'noopener';
+              }
+            });
+          });
+        }
+      ]
+    };
+
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      svg: { fontCache: 'global' },
+      options: {
+        enableMenu: false,
+        enableAssistiveMml: false,
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      startup: { typeset: false }
+    };
+  </script>
+
+  <script src="assets/docsify.min.js"></script>
+  <script src="assets/search.min.js"></script>
+  <script async src="assets/tex-svg.js"></script>
+  <script>
+    document.getElementById('zs-top').addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
