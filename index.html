@@ -10,7 +10,7 @@
   <!-- 全部前端资源本地化，不依赖任何外部 CDN -->
   <link rel="stylesheet" href="assets/vue.css">
   <style>
-    :root { --sidebar-width: 320px; }
+    :root, body { --sidebar-width: 330px; }
     body, .markdown-section, .sidebar, .search input {
       font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", Arial, sans-serif;
     }
@@ -18,8 +18,11 @@
       font-family: Consolas, "Courier New", Menlo, monospace;
     }
     .markdown-section { max-width: 900px; }
-    .sidebar > h1:first-child { margin: 10px 0 20px; font-size: 1.3rem; line-height: 1.4; }
+    .sidebar { padding: 22px 18px 60px; }
+    .sidebar-nav { padding: 0 0 40px; }
+    .sidebar > h1:first-child { margin: 10px 0 20px; font-size: 1.25rem; line-height: 1.45; }
     .sidebar ul { margin: 0; }
+    .sidebar li { margin: 3px 0; }
     .sidebar li p { margin: 1.05em 0 .5em; color: #9097a1; font-weight: 700; font-size: 12px; letter-spacing: .5px; }
     .sidebar-nav > ul > li > a { font-weight: 600; }
     /* 侧边栏二级目录 */
